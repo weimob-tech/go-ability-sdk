@@ -4,14 +4,8 @@ import (
 	"context"
 	"github.com/weimob-tech/go-project-base/pkg/wlog"
 
-	"github.com/weimob-tech/go-project-base/pkg/codec"
 	"github.com/weimob-tech/go-project-base/pkg/http"
 	"github.com/weimob-tech/go-project-base/pkg/x"
-)
-
-const (
-	_topic = "topic"
-	_event = "event"
 )
 
 type Dispatcher func(ctx context.Context, payload []byte) (x.Result, error)
@@ -22,16 +16,6 @@ type Service struct {
 	*registry
 	// 配置项
 	config *Config
-}
-
-// XinyunService 提供扩展点基础服务，例如鉴权、加解密、调用链等
-type XinyunService struct {
-	Service
-}
-
-// WosService 提供扩展点基础服务，例如鉴权、加解密、调用链等
-type WosService struct {
-	Service
 }
 
 func (service *Service) Setup() (err error) {
@@ -55,15 +39,22 @@ func (service *Service) InitWithOptions(config *Config) error {
 	return nil
 }
 
-func messageMetaFrom(data []byte) (topic string, event string, err error) {
-	// get topic
-	topic, err = codec.Json.GetString(data, _topic)
-	if err != nil {
-		return
-	}
-	// get event
-	event, err = codec.Json.GetString(data, _event)
-	return
+// XinyunService 提供扩展点基础服务，例如鉴权、加解密、调用链等
+type XinyunService struct {
+	Service
+}
+
+func (service *XinyunService) Register(listener GenericListener, path ...string) {
+	service.registry.Register(listener, SpecTypeXinyun, path...)
+}
+
+// WosService 提供扩展点基础服务，例如鉴权、加解密、调用链等
+type WosService struct {
+	Service
+}
+
+func (service *WosService) Register(listener GenericListener, path ...string) {
+	service.registry.Register(listener, SpecTypeWos, path...)
 }
 
 func NewWosCallbackConfig() *http.ExtendCallbackConfig {

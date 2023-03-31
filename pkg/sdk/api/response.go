@@ -13,7 +13,7 @@ type RpcResponse interface {
 }
 
 type Code struct {
-	Errcode int    `json:"errcode,omitempty"`
+	Errcode string `json:"errcode,omitempty"`
 	Errmsg  string `json:"errmsg,omitempty"`
 }
 
@@ -27,7 +27,6 @@ type BaseResponse[T any] struct {
 	httpStatus       int
 	httpContentBytes []byte
 	Data             *T
-	// httpHeaders      map[string][]string
 }
 
 func CreateResponse[T any](data *T) (response *BaseResponse[T]) {
@@ -61,7 +60,7 @@ func (response *BaseResponse[T]) IsSuccess() bool {
 }
 
 func (response *BaseResponse[T]) GetData() (data *T, err error) {
-	if response.Code.Errcode == 0 {
+	if response.Code.Errcode == "0" {
 		data = response.Data
 		return
 	}

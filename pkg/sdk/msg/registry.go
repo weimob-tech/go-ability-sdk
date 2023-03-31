@@ -1,6 +1,7 @@
 package msg
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
@@ -13,28 +14,28 @@ import (
 var (
 	registryInitialize sync.Once
 	globalRegistry     *registry
-	msgRegistryInfo    []RegisterMsgInfo
+	msgRegistryInfo    = map[SpecType]RegisterMsgInfo{}
 
 	defaultListenerNotfound = func(path ...string) (GenericListener, error) {
 		// 返回空，不抛异常，开放平台会不断重试并将消息放入失败队列
 		return nil, nil
 	}
 
-	defaultOnRegistryHook = func(listener GenericListener, path ...string) {
+	defaultOnRegistryHook = func(listener GenericListener, specType SpecType) {
 		// 注册到扩展点实现注册中心
-		msgRegistryInfo = append(msgRegistryInfo, RegisterMsgInfo{
-			ClientId:    "",
-			HostAddress: "",
-			Path:        "",
-			SpecsType:   0,
-		})
+		if _, ok := msgRegistryInfo[specType]; !ok {
+			msgRegistryInfo[specType] = RegisterMsgInfo{
+				Path:      fmt.Sprintf("weimob/cloud/%s/message/receive", specType.String()),
+				SpecsType: specType,
+			}
+		}
 	}
 )
 
 // 提供扩展点服务注册查找等生命周期管理
 type registry struct {
 	store            sync.Map
-	onRegistryHook   func(listener GenericListener, path ...string)
+	onRegistryHook   func(listener GenericListener, specType SpecType)
 	listenerNotFound func(path ...string) (GenericListener, error)
 }
 
@@ -42,6 +43,7 @@ func initRegistry(config *Config) *registry {
 	registryInitialize.Do(func() {
 		globalRegistry = &registry{
 			listenerNotFound: config.ListenerNotFound,
+			onRegistryHook:   config.OnRegistryHook,
 		}
 	})
 	return globalRegistry
@@ -61,12 +63,12 @@ func (reg *registry) Lookup(path ...string) (listener GenericListener, err error
 }
 
 // Register 将扩展点注册到注册中心
-func (reg *registry) Register(listener GenericListener, path ...string) {
+func (reg *registry) Register(listener GenericListener, spec SpecType, path ...string) {
 	// 注册
 	reg.store.Store(strings.Join(path, "/"), listener)
 	// 调用钩子
 	if reg.onRegistryHook != nil {
-		reg.onRegistryHook(listener, path...)
+		reg.onRegistryHook(listener, spec)
 	}
 }
 
@@ -107,4 +109,24 @@ func (reg *registry) Dispatch(c *http.ExtendCallbackContext) (result x.Result, e
 	}
 
 	return listener.OnMessage(ctx, message)
+}
+
+type msgMeta struct {
+	Topic string `json:"topic"`
+	Event string `json:"event"`
+}
+
+func messageMetaFrom(data []byte) (topic string, event string, err error) {
+	// get topic
+	var meta msgMeta
+	err = codec.Json.Unmarshal(data, &meta)
+	if err != nil {
+		wlog.Errorf("[weimob_msg]: unmarshal message meta failed, payload: %s, err: %s", string(data), err)
+		return "", "", err
+	}
+	if meta.Topic == "" || meta.Event == "" {
+		err = x.Error("90400", fmt.Sprintf("消息Topic与Event不能为空，Topic=%s, Event=%s", meta.Topic, meta.Event))
+		return
+	}
+	return meta.Topic, meta.Event, nil
 }

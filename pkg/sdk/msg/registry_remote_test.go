@@ -31,3 +31,35 @@ func TestRegisterMsgServiceRemote(t *testing.T) {
 		So(err, ShouldBeNil)
 	})
 }
+
+func TestUnmarshalMessageMeta(t *testing.T) {
+	Convey("Unmarshal message meta", t, func(c C) {
+		good := `{"topic":"foo","event":"bar"}`
+		bad := `{"topic":"foo","event":"bar"`
+		onlyTopic := `{"topic":"foo"}`
+		onlyOnlyEvent := `{"event":"bar"}`
+
+		topic, event, err := messageMetaFrom([]byte(good))
+		So(err, ShouldBeNil)
+		So(topic, ShouldEqual, "foo")
+		So(event, ShouldEqual, "bar")
+
+		topic, event, err = messageMetaFrom([]byte(bad))
+		So(err, ShouldNotBeNil)
+		_, _ = c.Println(err)
+		So(topic, ShouldBeEmpty)
+		So(event, ShouldBeEmpty)
+
+		topic, event, err = messageMetaFrom([]byte(onlyTopic))
+		So(err, ShouldNotBeNil)
+		_, _ = c.Println(err)
+		So(topic, ShouldBeEmpty)
+		So(event, ShouldBeEmpty)
+
+		topic, event, err = messageMetaFrom([]byte(onlyOnlyEvent))
+		So(err, ShouldNotBeNil)
+		_, _ = c.Println(err)
+		So(topic, ShouldBeEmpty)
+		So(event, ShouldBeEmpty)
+	})
+}

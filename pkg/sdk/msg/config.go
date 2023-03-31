@@ -5,7 +5,7 @@ package msg
 // OnRegistryHook 注册扩展点时的回调方法
 type Config struct {
 	ListenerNotFound func(path ...string) (GenericListener, error)
-	OnRegistryHook   func(listener GenericListener, path ...string)
+	OnRegistryHook   func(listener GenericListener, specType SpecType)
 }
 
 func NewConfig() *Config {

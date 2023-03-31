@@ -83,7 +83,7 @@ func RegistryRemote() (err error) {
 	for _, clientInfo := range clientInfoMap {
 		// 为多个 client 注册扩展点实现
 		for _, msgInfo := range msgRegistryInfo {
-			register := RegisterInfo{RegisterMsgInfo: msgInfo}
+			register := RegisterInfo{RegisterMsgInfo: msgInfo, InterfacePathVos: []any{}}
 			err = RegistryRemoteForClient(register, *clientInfo)
 			if err != nil {
 				return

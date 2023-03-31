@@ -11,8 +11,8 @@ var SuccessCode = InvocationCode{
 }
 
 type InvocationResponse[T any] struct {
-	Code InvocationCode
-	Data *T
+	Code InvocationCode `json:"code,omitempty"`
+	Data *T             `json:"data,omitempty"`
 }
 
 func Ok[T any](v *T) InvocationResponse[T] {

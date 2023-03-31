@@ -71,7 +71,7 @@ func (client *Client) DoAction(request RpcRequest, response RpcResponse) (err er
 	case RPCTypeMultiPart:
 		return client.doMultipartAction(request, response)
 	default:
-		return NewRpcError(90500, "unknown rpc type")
+		return NewRpcError("90500", "unknown rpc type")
 	}
 }
 
@@ -81,7 +81,7 @@ func (client *Client) doJsonAction(request RpcRequest, response RpcResponse) (er
 
 	payload, err := codec.Json.Marshal(request)
 	if err != nil {
-		return NewRpcError(90500, fmt.Sprintf("json marshal error, %s", err.Error()))
+		return NewRpcError("90500", fmt.Sprintf("json marshal error, %s", err.Error()))
 	}
 	req.SetBody(payload)
 
