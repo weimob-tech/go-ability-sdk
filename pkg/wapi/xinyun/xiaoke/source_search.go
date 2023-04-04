@@ -23,8 +23,7 @@ type SourceSearchRequest struct {
 	Stage string `json:"stage,omitempty"`
 }
 
-type SourceSearchResponse struct {
-}
+type SourceSearchResponse map[string]any
 
 func CreateSourceSearchRequest() (request *SourceSearchRequest) {
 	request = &SourceSearchRequest{

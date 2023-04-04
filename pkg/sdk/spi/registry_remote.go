@@ -2,6 +2,10 @@ package spi
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/weimob-tech/go-ability-sdk/pkg/sdk/auth"
 	ba "github.com/weimob-tech/go-project-base/pkg/auth"
 	"github.com/weimob-tech/go-project-base/pkg/codec"
@@ -9,9 +13,6 @@ import (
 	"github.com/weimob-tech/go-project-base/pkg/hook"
 	"github.com/weimob-tech/go-project-base/pkg/http"
 	"github.com/weimob-tech/go-project-base/pkg/wlog"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type SpecType int
@@ -131,7 +132,7 @@ func doRegister(client http.Client, request *RegisterRequest) (err error) {
 
 	err = client.Do(context.Background(), httpReq, httpRes)
 	if err != nil {
-		wlog.Errorf("[weimob_spi] 注册信息失败: %s，%s", codec.ToJson[RegisterRequest](request), err)
+		wlog.Errorf("[weimob_spi] 注册信息失败: %s, %s", codec.ToJson[RegisterRequest](request), err)
 		return
 	}
 	wlog.Infof("[weimob_spi] 注册返回信息: %s", string(httpRes.Body()))

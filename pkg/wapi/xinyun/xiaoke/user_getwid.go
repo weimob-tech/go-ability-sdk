@@ -22,8 +22,7 @@ type UserGetwidRequest struct {
 	Phone string `json:"phone,omitempty"`
 }
 
-type UserGetwidResponse struct {
-}
+type UserGetwidResponse string
 
 func CreateUserGetwidRequest() (request *UserGetwidRequest) {
 	request = &UserGetwidRequest{
@@ -35,6 +34,6 @@ func CreateUserGetwidRequest() (request *UserGetwidRequest) {
 }
 
 func CreateUserGetwidResponse() (response *api.BaseResponse[UserGetwidResponse]) {
-	response = api.CreateResponse[UserGetwidResponse](&UserGetwidResponse{})
+	response = api.CreateResponse[UserGetwidResponse](new(UserGetwidResponse))
 	return
 }

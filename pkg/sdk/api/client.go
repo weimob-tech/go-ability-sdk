@@ -3,11 +3,12 @@ package api
 import (
 	"context"
 	"fmt"
+	"io"
+	"reflect"
+
 	"github.com/weimob-tech/go-project-base/pkg/auth"
 	"github.com/weimob-tech/go-project-base/pkg/codec"
 	"github.com/weimob-tech/go-project-base/pkg/http"
-	"io"
-	"reflect"
 )
 
 type Client struct {
@@ -79,11 +80,17 @@ func (client *Client) doJsonAction(request RpcRequest, response RpcResponse) (er
 	req := client.buildRequest(request)
 	res := client.httpClient.NewResponse()
 
-	payload, err := codec.Json.Marshal(request)
-	if err != nil {
-		return NewRpcError("90500", fmt.Sprintf("json marshal error, %s", err.Error()))
+	if len(request.GetContent()) == 0 {
+		// 没有指定 content，用 request 整个作为入参
+		payload, err := codec.Json.Marshal(request)
+		if err != nil {
+			return NewRpcError("90500", fmt.Sprintf("json marshal error, %s", err.Error()))
+		}
+		req.SetBody(payload)
+	} else {
+		//  指定了 content，用 content 作为入参
+		req.SetBody(request.GetContent())
 	}
-	req.SetBody(payload)
 
 	err = client.httpClient.Do(context.Background(), req, res)
 	if err != nil {
