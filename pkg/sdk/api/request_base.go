@@ -6,6 +6,7 @@ import (
 
 type BaseRequest struct {
 	*baseRequest
+	path         string
 	product      string
 	version      string
 	actionName   string
@@ -29,6 +30,11 @@ func (request *BaseRequest) InitWithApiInfo(product, version, action, endpointTy
 	request.version = version
 	request.actionName = action
 	request.endpointType = endpointType
+}
+
+func (request *BaseRequest) InitWithPath(path string) {
+	request.initRequest()
+	request.path = path
 }
 
 func (request *BaseRequest) BuildUrl(config *Config) string {
@@ -64,6 +70,10 @@ func (request *BaseRequest) BuildQueries() string {
 }
 
 func (request *BaseRequest) buildPath() string {
+	if request.path != "" {
+		return request.path
+	}
+
 	var sb strings.Builder
 	sb.WriteString(PathSeparator)
 	sb.WriteString(request.endpointType)

@@ -1,4 +1,4 @@
-package wmpay
+package generic
 
 import (
 	"github.com/weimob-tech/go-ability-sdk/pkg/sdk/api"
